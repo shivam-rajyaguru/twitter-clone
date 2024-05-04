@@ -6,36 +6,39 @@ import { CiUser } from "react-icons/ci";
 import { CiBookmark } from "react-icons/ci";
 import { AiOutlineLogout } from "react-icons/ai";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
+import axios from "axios";
+import { USER_API_END_POINT } from "../utils/constant";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { getOtherUser, getProfile, getUser } from "../redux/userSlice";
 
 function Leftsidebar() {
-  const link = [
-    {
-      icon: <CiHome size={25} />,
-      title: "Home",
-      path: "/",
-    },
-    {
-      icon: <CiHashtag size={25} />,
-      title: "Explore",
-    },
-    {
-      icon: <IoIosNotificationsOutline size={25} />,
-      title: "Notifications",
-    },
-    {
-      icon: <CiUser size={25} />,
-      title: "Profile",
-      path: "/profile",
-    },
-    {
-      icon: <CiBookmark size={25} />,
-      title: "Bookmarks",
-    },
-    {
-      icon: <AiOutlineLogout size={25} />,
-      title: "Logout",
-    },
-  ];
+  const { user } = useSelector((store) => store.user);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const logoutHandler = async () => {
+    try {
+      const res = await axios.get(`${USER_API_END_POINT}/logout`);
+      navigate("/login");
+      dispatch(getUser(null));
+      dispatch(getOtherUser(null));
+      dispatch(getProfile(null));
+      toast.success(res.data.message, {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <>
       <div className="w-[15%]">
@@ -47,18 +50,53 @@ function Leftsidebar() {
           />
         </div>
         <div className="pt-2">
-          {link.map((item, index) => {
-            return (
-              <Link
-                to={item.path}
-                className="flex items-center px-4 py-3 hover:bg-gray-200 cursor-pointer rounded-full"
-                key={index}
-              >
-                <div>{item.icon}</div>
-                <div className=" text-base pl-2 font-medium">{item.title}</div>
-              </Link>
-            );
-          })}
+          <Link
+            to={"/"}
+            className="flex items-center px-4 py-3 hover:bg-gray-200 cursor-pointer rounded-full"
+          >
+            <div>
+              {" "}
+              <CiHome size={25} />
+            </div>
+            <div className=" text-base pl-2 font-medium">Home</div>
+          </Link>
+          <Link className="flex items-center px-4 py-3 hover:bg-gray-200 cursor-pointer rounded-full">
+            <div>
+              <CiHashtag size={25} />
+            </div>
+            <div className=" text-base pl-2 font-medium">Explore</div>
+          </Link>
+
+          <Link className="flex items-center px-4 py-3 hover:bg-gray-200 cursor-pointer rounded-full">
+            <div>
+              <IoIosNotificationsOutline size={25} />
+            </div>
+            <div className=" text-base pl-2 font-medium">Notifications</div>
+          </Link>
+          <Link
+            to={`profile/${user?._id}`}
+            className="flex items-center px-4 py-3 hover:bg-gray-200 cursor-pointer rounded-full"
+          >
+            <div>
+              <CiUser size={25} />
+            </div>
+            <div className=" text-base pl-2 font-medium">Profile</div>
+          </Link>
+          <Link className="flex items-center px-4 py-3 hover:bg-gray-200 cursor-pointer rounded-full">
+            <div>
+              <CiBookmark size={25} />
+            </div>
+            <div className="text-base pl-2 font-medium">Bookmarks</div>
+          </Link>
+          <Link
+            onClick={logoutHandler}
+            className="flex items-center px-4 py-3 hover:bg-gray-200 cursor-pointer rounded-full"
+          >
+            <div>
+              <AiOutlineLogout size={25} />
+            </div>
+            <div className=" text-base pl-2 font-medium">Logout</div>
+          </Link>
 
           <button className="bg-[#1D9BF0] hover:bg-blue-500 border-none px-4 py-2 mt-2 w-full rounded-full font-medium text-white">
             Post

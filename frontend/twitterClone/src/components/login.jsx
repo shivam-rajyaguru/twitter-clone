@@ -1,10 +1,125 @@
 import React, { useState } from "react";
+import axios from "axios";
+import { Bounce, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { USER_API_END_POINT } from "../utils/constant";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { getUser } from "../redux/userSlice";
 
 function login() {
   const [isLogin, setIsLogin] = useState(true);
+  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const loginSignupHandler = () => {
     setIsLogin(!isLogin);
+  };
+
+  const submitHandler = async (e) => {
+    e.preventDefault();
+    // console.log(name, username, email, password);/
+
+    if (isLogin) {
+      try {
+        const res = await axios.post(
+          `${USER_API_END_POINT}/login`,
+          {
+            email,
+            password,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+            withCredentials: true,
+          }
+        );
+
+        // console.log(res);
+        dispatch(getUser(res?.data?.user));
+
+        if (res.data.success) {
+          toast.success(res.data.message, {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+            transition: Bounce,
+          });
+          navigate("/");
+        }
+      } catch (error) {
+        toast.error(error.response.data.message, {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+          transition: Bounce,
+        });
+        console.log(error);
+      }
+    } else {
+      try {
+        const res = await axios.post(
+          `${USER_API_END_POINT}/register`,
+          {
+            name,
+            username,
+            email,
+            password,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        // console.log(res);
+
+        if (res.data.success) {
+          setIsLogin(true);
+          toast.success(res.data.message, {
+            position: "top-center",
+            autoClose: 1000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+            transition: Bounce,
+          });
+        }
+      } catch (error) {
+        console.log(error);
+        toast.error(error.response.data.message, {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+          transition: Bounce,
+        });
+      }
+    }
   };
 
   return (
@@ -26,16 +141,24 @@ function login() {
           <h1 className=" mt-4 mb-2 text-2xl font-bold">
             {isLogin ? "Login" : "Signup"}
           </h1>
-          <form action="" className="flex flex-col w-[65%]">
+          <form
+            onSubmit={submitHandler}
+            action=""
+            className="flex flex-col w-[65%]"
+          >
             {!isLogin && (
               <>
                 <input
                   type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   placeholder="Name"
                   className="px-3 py-2 my-1 rounded-full border border-gray-800 font-semibold outline-blue-500"
                 />
                 <input
                   type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   placeholder="Username"
                   className="px-3 py-2 my-1 rounded-full border border-gray-800 font-semibold outline-blue-500"
                 />
@@ -43,11 +166,15 @@ function login() {
             )}
             <input
               type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="Email"
               className="px-3 py-2 my-1 rounded-full border border-gray-800 font-semibold outline-blue-500"
             />
             <input
               type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
               className="px-3 py-2 my-1 rounded-full border border-gray-800 font-semibold outline-blue-500"
             />
